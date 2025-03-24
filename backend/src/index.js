@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const promBundle = require('express-prom-bundle');
-const { Registry } = require('prom-client');
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +16,6 @@ app.use(cors());
 app.use(express.json());
 
 // Prometheus metrics
-const register = new Registry();
 const metricsMiddleware = promBundle({ includeMethod: true, includePath: true });
 app.use(metricsMiddleware);
 
