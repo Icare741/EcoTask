@@ -71,6 +71,12 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin
+          docker compose version
       
       - name: Create env file
         run: |
@@ -78,8 +84,8 @@ jobs:
           
       - name: Deploy with Docker Compose
         run: |
-          docker-compose pull
-          docker-compose up -d
+          docker compose pull
+          docker compose up -d
 
   deploy-k8s:
     needs: build
