@@ -8,6 +8,7 @@ router.get('/', async (req, res) => {
     const tasks = await Task.getAll();
     res.json(tasks);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Erreur lors de la récupération des tâches:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
@@ -19,6 +20,7 @@ router.post('/', async (req, res) => {
     const task = await Task.create(req.body);
     res.status(201).json(task);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Erreur lors de la création de la tâche:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
@@ -33,6 +35,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(task);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Erreur lors de la récupération de la tâche:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
@@ -47,6 +50,7 @@ router.put('/:id', async (req, res) => {
     }
     res.json(task);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Erreur lors de la mise à jour de la tâche:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
@@ -61,6 +65,7 @@ router.delete('/:id', async (req, res) => {
     }
     res.json({ message: 'Tâche supprimée avec succès' });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Erreur lors de la suppression de la tâche:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }

@@ -39,14 +39,17 @@ const initDb = async () => {
   try {
     const sql = fs.readFileSync(path.join(__dirname, 'db/init.sql'), 'utf8');
     await pool.query(sql);
+    // eslint-disable-next-line no-console
     console.log('Base de données initialisée avec succès');
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Erreur lors de l\'initialisation de la base de données:', error);
   }
 };
 
 // Gestion des erreurs
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
+  // eslint-disable-next-line no-console
   console.error(err.stack);
   res.status(500).json({ error: 'Une erreur est survenue!' });
 });
@@ -55,6 +58,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   await initDb();
   app.listen(port, () => {
+    // eslint-disable-next-line no-console
     console.log(`Serveur démarré sur le port ${port}`);
   });
 };
