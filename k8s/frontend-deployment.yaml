@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecotask-frontend
+  namespace: ecotask
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ecotask-frontend
+  template:
+    metadata:
+      labels:
+        app: ecotask-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: icare741/ecotask-frontend:latest
+        ports:
+        - containerPort: 5173
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecotask-frontend
+  namespace: ecotask
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5173
+  selector:
+    app: ecotask-frontend 

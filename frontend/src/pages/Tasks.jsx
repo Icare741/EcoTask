@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -16,33 +16,14 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-
-// Données de démonstration
-const initialTasks = [
-  {
-    id: 1,
-    title: 'Rédaction du rapport',
-    description: 'Rédiger le rapport mensuel',
-    responsible: 'Jean Dupont',
-    deadline: '2024-03-15',
-    priority: 'Haute',
-    carbonFootprint: 0.5,
-  },
-  {
-    id: 2,
-    title: 'Développement frontend',
-    description: 'Implémenter le tableau de bord',
-    responsible: 'Marie Martin',
-    deadline: '2024-03-20',
-    priority: 'Moyenne',
-    carbonFootprint: 1.2,
-  },
-];
+import { taskService } from '../services/api';
 
 function Tasks() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
@@ -52,25 +33,48 @@ function Tasks() {
     priority: 'Moyenne',
   });
 
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const data = await taskService.getAll();
+      setTasks(data);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des tâches:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleSubmit = () => {
-    const task = {
-      ...newTask,
-      id: tasks.length + 1,
-      carbonFootprint: 0.5, // Valeur par défaut
-    };
-    setTasks([...tasks, task]);
-    handleClose();
-    setNewTask({
-      title: '',
-      description: '',
-      responsible: '',
-      deadline: '',
-      priority: 'Moyenne',
-    });
+  const handleSubmit = async () => {
+    try {
+      const task = await taskService.create(newTask);
+      setTasks([task, ...tasks]);
+      handleClose();
+      setNewTask({
+        title: '',
+        description: '',
+        responsible: '',
+        deadline: '',
+        priority: 'Moyenne',
+      });
+    } catch (error) {
+      console.error('Erreur lors de la création de la tâche:', error);
+    }
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -103,9 +107,9 @@ function Tasks() {
                 <TableCell>{task.title}</TableCell>
                 <TableCell>{task.description}</TableCell>
                 <TableCell>{task.responsible}</TableCell>
-                <TableCell>{task.deadline}</TableCell>
+                <TableCell>{new Date(task.deadline).toLocaleDateString()}</TableCell>
                 <TableCell>{task.priority}</TableCell>
-                <TableCell>{task.carbonFootprint}</TableCell>
+                <TableCell>{task.carbon_footprint}</TableCell>
               </TableRow>
             ))}
           </TableBody>
