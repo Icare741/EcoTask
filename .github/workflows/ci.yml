@@ -65,7 +65,23 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/ecotask-backend:latest
 
-  deploy:
+  deploy-compose:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create env file
+        run: |
+          echo "DATABASE_URL=postgresql://ecotask:ecotask@db:5432/ecotask" > .env
+          
+      - name: Deploy with Docker Compose
+        run: |
+          docker-compose pull
+          docker-compose up -d
+
+  deploy-k8s:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_TO_K8S == 'true'
