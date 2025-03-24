@@ -1,48 +1,55 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: ecotask
-      POSTGRES_PASSWORD: ecotask
-      POSTGRES_MULTIPLE_DATABASES: ecotask,sonar
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
+  frontend:
+    build: ./frontend
     ports:
-      - "5432:5432"
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001/api
 
   backend:
     build: ./backend
     ports:
-      - "3000:3000"
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://ecotask:ecotask@db:5432/ecotask
-    depends_on:
-      - db
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ecotask
+      - PORT=3001
 
-  frontend:
-    build: ./frontend
+  db:
+    image: postgres:14-alpine
     ports:
-      - "5173:5173"
-    depends_on:
-      - backend
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ecotask
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   prometheus:
     image: prom/prometheus:latest
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana:latest
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
     ports:
-      - "3001:3000"
+      - "3002:3000"
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
@@ -53,6 +60,7 @@ services:
     ports:
       - "9000:9000"
     environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
       - SONAR_JDBC_URL=jdbc:postgresql://db:5432/sonar
       - SONAR_JDBC_USERNAME=ecotask
       - SONAR_JDBC_PASSWORD=ecotask
@@ -62,6 +70,10 @@ services:
       - sonarqube_logs:/opt/sonarqube/logs
     depends_on:
       - db
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
   sonar-scanner:
     image: newtmitch/sonar-scanner:latest
@@ -76,6 +88,7 @@ services:
 
 volumes:
   postgres_data:
+  prometheus_data:
   grafana_data:
   sonarqube_data:
   sonarqube_extensions:

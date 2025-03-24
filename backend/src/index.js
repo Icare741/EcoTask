@@ -6,6 +6,7 @@ const promBundle = require('express-prom-bundle');
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
+const client = require('prom-client');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,15 +20,6 @@ app.use(express.json());
 const metricsMiddleware = promBundle({ includeMethod: true, includePath: true });
 app.use(metricsMiddleware);
 
-// Routes
-const tasksRouter = require('./routes/tasks');
-app.use('/api/tasks', tasksRouter);
-
-// Route de base
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK' });
-});
-
 // Initialisation de la base de données
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://ecotask:ecotask@db:5432/ecotask'
@@ -37,17 +29,29 @@ const initDb = async () => {
   try {
     const sql = fs.readFileSync(path.join(__dirname, 'db/init.sql'), 'utf8');
     await pool.query(sql);
-    // eslint-disable-next-line no-console
     console.log('Base de données initialisée avec succès');
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Erreur lors de l\'initialisation de la base de données:', error);
   }
 };
 
+// Routes
+const tasksRouter = require('./routes/tasks');
+app.use('/api/tasks', tasksRouter);
+
+// Route pour les métriques Prometheus
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', metricsMiddleware.metricsContentType);
+  res.end(await metricsMiddleware.getMetrics());
+});
+
+// Route de base
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Gestion des erreurs
 app.use((err, req, res, _next) => {
-  // eslint-disable-next-line no-console
   console.error(err.stack);
   res.status(500).json({ error: 'Une erreur est survenue!' });
 });
@@ -56,7 +60,6 @@ app.use((err, req, res, _next) => {
 const startServer = async () => {
   await initDb();
   app.listen(port, () => {
-    // eslint-disable-next-line no-console
     console.log(`Serveur démarré sur le port ${port}`);
   });
 };
