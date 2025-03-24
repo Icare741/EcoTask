@@ -75,8 +75,8 @@ jobs:
       - name: Install Docker Compose
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-compose-plugin
-          docker compose version
+          sudo apt-get install -y docker-compose
+          docker-compose --version
       
       - name: Create env file
         run: |
