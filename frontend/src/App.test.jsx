@@ -12,4 +12,14 @@ describe('App', () => {
     );
     expect(document.body).toBeDefined();
   });
+
+  it('renders the navbar', () => {
+    render(
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    );
+    // Vérifie que le titre de l'application est présent
+    expect(screen.getByText('EcoTask')).toBeDefined();
+  });
 }); 
