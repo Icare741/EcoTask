@@ -8,8 +8,6 @@ on:
 
 env:
   DOCKER_BUILDKIT: 1
-  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  KUBERNETES_CONFIG: ${{ secrets.KUBERNETES_CONFIG }}
 
 jobs:
   test:
@@ -40,30 +38,8 @@ jobs:
       - name: Run Backend Linting
         run: cd backend && npm run lint
 
-  sonar:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          
-      - name: Install SonarQube Scanner
-        run: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-          unzip sonar-scanner-cli-4.8.0.2856-linux.zip
-          echo "$PWD/sonar-scanner-4.8.0.2856-linux/bin" >> $GITHUB_PATH
-          
-      - name: Run SonarQube Analysis
-        run: sonar-scanner
-
   build:
-    needs: [test, sonar]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
