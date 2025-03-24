@@ -96,4 +96,12 @@ npm test
 
 Le déploiement est automatique via GitHub Actions :
 1. Push sur main -> déploiement en production
-2. Push sur develop -> déploiement en développement 
+2. Push sur develop -> déploiement en développement
+
+## CI/CD
+
+Le projet utilise GitHub Actions pour :
+- Exécuter les tests
+- Analyser la qualité du code avec SonarQube
+- Construire et pousser les images Docker
+- Déployer sur Kubernetes 
