@@ -30,7 +30,7 @@ jobs:
         run: cd frontend && npm run lint
         
       - name: Install Backend Dependencies
-        run: cd backend && npm ci
+        run: cd backend && npm install
         
       - name: Run Backend Tests
         run: cd backend && npm test
