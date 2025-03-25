@@ -73,17 +73,6 @@ services:
     depends_on:
       - db
 
-  sonar-scanner:
-    image: newtmitch/sonar-scanner:latest
-    environment:
-      - SONAR_HOST_URL=http://sonarqube:9000
-      - SONAR_LOGIN=sqa_5b9c03d9462812b245564e346ac42df9e64864c2
-    volumes:
-      - .:/usr/src
-    working_dir: /usr/src
-    depends_on:
-      - sonarqube
-
 volumes:
   postgres_data:
   grafana_data:
